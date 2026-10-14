@@ -24,6 +24,8 @@ namespace freq
         PlaybackMode mode = PlaybackMode::Loop;
         bool         missing = false;   // файл не найден / не декодировался
         bool         loaded = false;
+        double       durationSec = 0.0;   // для UI (заполняется при загрузке)
+        double       fileRate = 0.0;
     };
 
     // Владение и потоки:

@@ -53,6 +53,7 @@ namespace freq::dsp
         // Для UI/таймера (потокобезопасно)
         float displayFrequency() const noexcept { return displayFreq_.load(std::memory_order_relaxed); }
         float signalQuality() const noexcept { return quality_.load(std::memory_order_relaxed); }
+        float outputPeak() const noexcept { return outPeak_.load(std::memory_order_relaxed); }   // пик последнего блока
         int   scannerState() const noexcept { return scanState_.load(std::memory_order_relaxed); }
         bool  frequencyOwnedByEngine() const noexcept { return owned_.load(std::memory_order_relaxed); }
         long long slotPosition(int slot) const noexcept { return slots_[(size_t) slot].pos; }
@@ -103,7 +104,7 @@ namespace freq::dsp
         int tickCounter_ = 0;
         float holdDecay_ = 0.99f;
 
-        std::atomic<float> displayFreq_ { 98.f }, quality_ { 0.f };
+        std::atomic<float> displayFreq_ { 98.f }, quality_ { 0.f }, outPeak_ { 0.f };
         std::atomic<int> scanState_ { 0 };
         std::atomic<bool> owned_ { false };
     };

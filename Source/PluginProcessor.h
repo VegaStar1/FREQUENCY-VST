@@ -41,6 +41,9 @@ public:
     float displayFrequency() const noexcept { return engine_.displayFrequency(); }
     float signalQuality() const noexcept { return engine_.signalQuality(); }
     int   scannerState() const noexcept { return engine_.scannerState(); }
+    float outputPeak() const noexcept { return engine_.outputPeak(); }
+    // Клик по станции в UI: настроиться на её частоту (применяется в начале следующего блока).
+    void requestTuneToSlot(int slot) noexcept { pendingTuneSlot_.store(slot); }
 
 private:
     void timerCallback() override;
@@ -49,6 +52,7 @@ private:
     freq::dsp::RadioEngine engine_;
     double sampleRate_ = 44100.0;
     int lastStationParam_ = 0;
+    std::atomic<int> pendingTuneSlot_ { -1 };
 
     // Сырые атомарные значения параметров (чтение из аудиопотока без блокировок)
     std::atomic<float> *pFreq = nullptr, *pReception = nullptr, *pNoise = nullptr, *pSelectivity = nullptr,

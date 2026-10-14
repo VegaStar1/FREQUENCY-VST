@@ -65,10 +65,13 @@ namespace freq
         pool_.addJob([this, alive, slot, file]
         {
             std::shared_ptr<StationBuffer> buf;
+            double durationSec = 0.0, fileRate = 0.0;
             std::unique_ptr<juce::AudioFormatReader> reader(formats_.createReaderFor(file));
 
             if (reader != nullptr && reader->lengthInSamples > 0 && reader->numChannels > 0)
             {
+                fileRate = reader->sampleRate;
+                durationSec = reader->sampleRate > 0 ? (double) reader->lengthInSamples / reader->sampleRate : 0.0;
                 PrepareOptions opt;
                 opt.targetRate = engineRate_.load();
                 const auto maxLen = (juce::int64) (opt.maxSeconds * reader->sampleRate);
@@ -83,12 +86,13 @@ namespace freq
                 }
             }
 
-            juce::MessageManager::callAsync([this, alive, slot, buf]
+            juce::MessageManager::callAsync([this, alive, slot, buf, durationSec, fileRate]
             {
                 if (! alive->load()) return;
                 auto& m = meta(slot);
                 m.loaded  = (buf != nullptr);
                 m.missing = (buf == nullptr);
+                m.durationSec = durationSec; m.fileRate = fileRate;
                 if (m.frequencyMHz <= 0.f) m.frequencyMHz = defaultFrequency(slot);
                 publishSlot(slot, buf);
             });

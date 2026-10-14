@@ -256,6 +256,7 @@ namespace freq::dsp
         const float lfoInc1 = (float) (kTwoPi * 0.7 / fs_), lfoInc2 = (float) (kTwoPi * 2.9 / fs_);
         const float recGain = 0.3f + 0.7f * p.reception;
         float lastQ = qSm_.current();
+        float blockPeak = 0.f;
 
         for (int i = 0; i < n; ++i)
         {
@@ -344,6 +345,7 @@ namespace freq::dsp
                 resetDsp(); l = r = 0.f;                                      // самовосстановление при отравлении состояния
             }
             l = std::clamp(l, -4.f, 4.f); r = std::clamp(r, -4.f, 4.f);
+            blockPeak = std::max(blockPeak, std::max(std::fabs(l), std::fabs(r)));
 
             if (numCh == 1) out[0][i] = 0.5f * (l + r);
             else { out[0][i] = l; out[1][i] = r; }
@@ -352,6 +354,7 @@ namespace freq::dsp
 
         displayFreq_.store(tuneTarget_, std::memory_order_relaxed);
         quality_.store(lastQ, std::memory_order_relaxed);
+        outPeak_.store(blockPeak, std::memory_order_relaxed);
         scanState_.store((int) scanner_.state(), std::memory_order_relaxed);
         owned_.store(scanOwned_, std::memory_order_relaxed);
     }

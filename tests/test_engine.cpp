@@ -612,6 +612,19 @@ void test_no_allocations_in_process()
     CHECK(g_allocs.load() == 0);
 }
 
+void test_output_peak_meter()
+{
+    TS t; t.freq = 98.f; t.L = t.R = sineV(440, SR, 1.0, 0.5f); auto snap = makeSnap({ t }, SR);
+    RadioEngine e; e.prepare(SR);
+    EngineParams p = baseParams(98.f); p.noise = 0.f;
+    CHECK(e.outputPeak() == 0.f);
+    render(e, snap.get(), p, 0.5, 256, SR);
+    std::printf("    outputPeak=%.3f (ожидается ~0.178)\n", e.outputPeak());
+    CHECK(e.outputPeak() > 0.15f && e.outputPeak() < 0.21f);
+    render(e, nullptr, p, 0.1, 256, SR);
+    CHECK(e.outputPeak() < 1e-6f);
+}
+
 int main()
 {
     RUN(test_prepare_station);
@@ -632,6 +645,7 @@ int main()
     RUN(test_scanner_integration);
     RUN(test_gain_and_saturation_levels);
     RUN(test_no_allocations_in_process);
+    RUN(test_output_peak_meter);
     std::printf("\n%d checks, %d failed\n", g_checks, g_failed);
     return g_failed == 0 ? 0 : 1;
 }

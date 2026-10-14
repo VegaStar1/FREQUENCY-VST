@@ -85,6 +85,13 @@ void FrequencyProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mi
     // Единственное обращение к данным станций из аудиопотока: без блокировок и аллокаций.
     const auto* snapshot = stations.acquire();
 
+    const int uiSlot = pendingTuneSlot_.exchange(-1);
+    if (uiSlot >= 0 && uiSlot < freq::kMaxStations && snapshot != nullptr)
+    {
+        const auto& rt = snapshot->slots[(size_t) uiSlot];
+        if (rt.buffer != nullptr && rt.enabled) engine_.tuneTo(rt.freqMHz);
+    }
+
     // Параметр «Station» (1..16): переход на частоту станции. Меняем только при изменении значения.
     const int stationParam = (int) std::lround(pStation->load());
     if (stationParam != lastStationParam_)

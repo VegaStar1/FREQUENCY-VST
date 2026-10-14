@@ -1,6 +1,6 @@
 # FREQUENCY — VST3 radio tuner (work in progress)
 
-Статус: аудиодвижок и тесты проверены; JUCE/VST3-часть ещё НЕ собиралась. UI временный.
+Статус: аудиодвижок и тесты проверены на Linux; UI первой версии (тюнер, 16 станций, транспорт, ручки) написан, но ещё не собирался.
 
 ## Быстрый тест
 1. Залейте проект в новый GitHub-репозиторий (ветка main).
@@ -20,5 +20,6 @@
 ## Только тесты ядра (любой ОС с g++/clang++)
     g++ -std=c++17 -O1 -g -fsanitize=address,undefined -ISource tests/test_dsp.cpp -o dsp_tests && ./dsp_tests
     g++ -std=c++17 -O1 -g -fsanitize=address,undefined -ISource tests/test_engine.cpp Source/Engine/RadioEngine.cpp Source/Stations/StationPrep.cpp -o engine_tests && ./engine_tests
+    g++ -std=c++17 -O1 -g -fsanitize=address,undefined -ISource tests/test_ui_model.cpp -o ui_tests && ./ui_tests
 
 Архитектура и ограничения: `docs/ARCHITECTURE.md`.

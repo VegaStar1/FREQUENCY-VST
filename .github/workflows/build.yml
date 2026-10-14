@@ -20,6 +20,10 @@ jobs:
           g++ -std=c++17 -O1 -g -Wall -Wextra -fsanitize=address,undefined -ISource \
               tests/test_engine.cpp Source/Engine/RadioEngine.cpp Source/Stations/StationPrep.cpp -o engine_tests
           ./engine_tests
+      - name: UI model tests
+        run: |
+          g++ -std=c++17 -O1 -g -Wall -Wextra -fsanitize=address,undefined -ISource tests/test_ui_model.cpp -o ui_tests
+          ./ui_tests
 
   # Windows x64 VST3 (JUCE подтягивается через FetchContent, нужен доступ к GitHub).
   windows-vst3:
