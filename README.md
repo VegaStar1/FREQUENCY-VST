@@ -21,5 +21,15 @@
     g++ -std=c++17 -O1 -g -fsanitize=address,undefined -ISource tests/test_dsp.cpp -o dsp_tests && ./dsp_tests
     g++ -std=c++17 -O1 -g -fsanitize=address,undefined -ISource tests/test_engine.cpp Source/Engine/RadioEngine.cpp Source/Stations/StationPrep.cpp -o engine_tests && ./engine_tests
     g++ -std=c++17 -O1 -g -fsanitize=address,undefined -ISource tests/test_ui_model.cpp -o ui_tests && ./ui_tests
+    g++ -std=c++17 -O1 -g -fsanitize=address,undefined -ISource tests/test_presets.cpp Source/Engine/RadioEngine.cpp Source/Stations/StationPrep.cpp -o preset_tests && ./preset_tests
 
 Архитектура и ограничения: `docs/ARCHITECTURE.md`.
+
+## Пресеты
+10 фабричных (CLEAN FM, VINTAGE FM, DISTANT AM, NIGHT DRIVE, LOST SIGNAL, TUNING BETWEEN STATIONS, BROKEN RECEIVER,
+CINEMATIC SEARCH, HIP-HOP RADIO INTRO, MINIMAL INTERFERENCE). Пресет меняет только параметры приёмника, но не частоту и не станции.
+Пользовательские пресеты: `%APPDATA%\FrequencyAudio\FREQUENCY\Presets\*.freqpreset` (текстовый формат, версия 1).
+
+## Перетаскивание файлов
+Бросьте WAV/AIFF на окно плагина: на слот - заменяет его, мимо слотов - заполняет свободные по порядку.
+Работает с настоящим файловым drag'ом (Проводник; DAW, которые отдают файл наружу). Внутренние клипы DAW без файла на диске не передаются.

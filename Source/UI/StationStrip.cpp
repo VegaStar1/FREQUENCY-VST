@@ -1,4 +1,5 @@
 #include "StationStrip.h"
+#include "Prompt.h"
 #include "Theme.h"
 #include "UiModel.h"
 
@@ -39,10 +40,10 @@ namespace freq::ui
             const bool empty = ! m.loaded && ! m.missing && m.file == juce::File{};
             const bool loading = ! m.loaded && ! m.missing && m.file != juce::File{};
 
-            g.setColour(i == selected ? raised.brighter(0.08f) : panel);
+            g.setColour(i == dropSlot_ ? accent.withAlpha(0.18f) : (i == selected ? raised.brighter(0.08f) : panel));
             g.fillRoundedRectangle(r, 6.f);
-            g.setColour(i == selected ? accent : (m.missing ? warn : line));
-            g.drawRoundedRectangle(r.reduced(0.5f), 6.f, i == selected ? 1.5f : 1.f);
+            g.setColour((i == selected || i == dropSlot_) ? accent : (m.missing ? warn : line));
+            g.drawRoundedRectangle(r.reduced(0.5f), 6.f, (i == selected || i == dropSlot_) ? 1.5f : 1.f);
 
             auto inner = slotBounds(i).reduced(10, 8);
             g.setColour(dim);
@@ -64,7 +65,7 @@ namespace freq::ui
             }
             g.setColour(m.missing ? warn : (m.enabled ? text : dim));
             setFont(g, 13.f, true);
-            g.drawText(m.missing ? "MISSING FILE" : m.name, inner.removeFromTop(18), juce::Justification::centredLeft, true);
+            g.drawText(m.missing ? (m.loadFailed ? "CAN'T READ FILE" : "MISSING FILE") : m.name, inner.removeFromTop(18), juce::Justification::centredLeft, true);
             g.setColour(m.missing ? dim : accent);
             setFont(g, 12.f);
             g.drawText(juce::String(freq::ui::formatFrequency(m.frequencyMHz)) + " MHz", inner.removeFromTop(16), juce::Justification::centredLeft);
@@ -82,6 +83,7 @@ namespace freq::ui
         const int i = slotAt(getMouseXYRelative());
         if (i < 0) return {};
         const auto& m = proc_.stations.meta(i);
+        if (m.missing && m.loadFailed) return "This file could not be read (unsupported or damaged): " + m.file.getFullPathName() + "\nRight-click > Replace file...";
         if (m.missing) return "File not found: " + m.file.getFullPathName() + "\nRight-click > Replace file...";
         if (m.loaded)  return m.file.getFullPathName() + "\nClick to tune. Right-click for options.";
         if (m.file != juce::File{}) return "Loading...";
@@ -113,26 +115,8 @@ namespace freq::ui
                 if (safe == nullptr) return;
                 const auto file = fc.getResult();
                 if (file == juce::File{}) return;                       // отмена
-                auto& m = safe->proc_.stations.meta(slot);
-                m.missing = false; m.loaded = false;
-                m.name = {};                                            // имя возьмётся из файла
-                safe->proc_.stations.loadFileAsync(slot, file);
+                safe->proc_.stations.loadReplacing(slot, file);
             });
-    }
-
-    void StationStrip::promptText(const juce::String& title, const juce::String& initial,
-                                  std::function<void(const juce::String&)> onOk)
-    {
-        auto* w = new juce::AlertWindow(title, {}, juce::MessageBoxIconType::NoIcon);
-        w->addTextEditor("t", initial);
-        w->addButton("OK", 1, juce::KeyPress(juce::KeyPress::returnKey));
-        w->addButton("Cancel", 0, juce::KeyPress(juce::KeyPress::escapeKey));
-        w->enterModalState(true,
-            juce::ModalCallbackFunction::create([w, onOk](int result)
-            {
-                if (result == 1) onOk(w->getTextEditorContents("t"));
-            }),
-            true);
     }
 
     void StationStrip::showMenu(int slot)
@@ -162,14 +146,14 @@ namespace freq::ui
                     case 1: safe->chooseFile(slot); break;
                     case 2: proc.stations.removeStation(slot); break;
                     case 3:
-                        safe->promptText("Rename station", meta.name, [safe, slot](const juce::String& t)
+                        freq::ui::promptText("Rename station", meta.name, [safe, slot](const juce::String& t)
                         {
                             if (safe == nullptr || t.trim().isEmpty()) return;
                             safe->proc_.stations.meta(slot).name = t.trim();
                         });
                         break;
                     case 4:
-                        safe->promptText("Frequency (MHz, 87.5 - 108.0)", juce::String(meta.frequencyMHz, 1),
+                        freq::ui::promptText("Frequency (MHz, 87.5 - 108.0)", juce::String(meta.frequencyMHz, 1),
                             [safe, slot](const juce::String& t)
                         {
                             if (safe == nullptr || t.trim().isEmpty()) return;

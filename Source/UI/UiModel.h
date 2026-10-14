@@ -3,7 +3,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cctype>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace freq::ui
 {
@@ -54,5 +57,31 @@ namespace freq::ui
         if (! std::isfinite(peak) || peak <= 1.0e-6f) return 0.f;
         const float db = 20.f * std::log10(peak);
         return std::clamp((db + 60.f) / 60.f, 0.f, 1.f);
+    }
+
+    // Допустимые для перетаскивания расширения (в соответствии с ТЗ: WAV и AIFF).
+    inline bool isSupportedAudioExtension(const std::string& ext)
+    {
+        std::string e;
+        for (unsigned char c : ext) if (c != '.') e += (char) std::tolower(c);
+        return e == "wav" || e == "aif" || e == "aiff";
+    }
+
+    // Раскладка брошенных файлов по слотам. Файл, брошенный на слот (даже занятый), заменяет его;
+    // остальные заполняют свободные слоты по возрастанию номера. Возвращает число файлов, которым не хватило места.
+    inline int planDrop(int numFiles, int targetSlot, const bool* occupied, int numSlots,
+                        std::vector<std::pair<int, int>>& plan)   // (слот, индекс файла)
+    {
+        plan.clear();
+        if (numFiles <= 0) return 0;
+        if (numSlots <= 0 || occupied == nullptr) return numFiles;
+        int next = 0;
+        if (targetSlot >= 0 && targetSlot < numSlots) plan.emplace_back(targetSlot, next++);
+        for (int s = 0; s < numSlots && next < numFiles; ++s)
+        {
+            if (s == targetSlot || occupied[s]) continue;
+            plan.emplace_back(s, next++);
+        }
+        return numFiles - next;
     }
 }

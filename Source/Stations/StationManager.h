@@ -23,6 +23,7 @@ namespace freq
         float        loopFadeMs = 20.f;
         PlaybackMode mode = PlaybackMode::Loop;
         bool         missing = false;   // файл не найден / не декодировался
+        bool         loadFailed = false;// файл есть, но не читается (неподдерживаемый или повреждён)
         bool         loaded = false;
         double       durationSec = 0.0;   // для UI (заполняется при загрузке)
         double       fileRate = 0.0;
@@ -44,6 +45,7 @@ namespace freq
 
         // --- message thread ---
         void loadFileAsync(int slot, const juce::File& file);
+        void loadReplacing(int slot, const juce::File& file);   // замена: сбрасывает состояние слота (частота сохраняется)
         void removeStation(int slot);
         void applyMeta(int slot);                    // после изменения частоты/усиления/режима/enabled: републикация
         void setSampleRate(double newRate);          // можно вызывать из любого потока; пересчёт - на message-потоке

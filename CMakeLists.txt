@@ -34,6 +34,7 @@ target_sources(Frequency PRIVATE
     Source/PluginEditor.cpp
     Source/UI/TunerPanel.cpp
     Source/UI/StationStrip.cpp
+    Source/Presets/PresetManager.cpp
     Source/Engine/RadioEngine.cpp
     Source/Stations/StationPrep.cpp
     Source/Stations/StationManager.cpp)
@@ -57,7 +58,9 @@ add_executable(frequency_dsp_tests tests/test_dsp.cpp)
 add_executable(frequency_engine_tests tests/test_engine.cpp
     Source/Engine/RadioEngine.cpp Source/Stations/StationPrep.cpp)
 add_executable(frequency_ui_model_tests tests/test_ui_model.cpp)
-foreach(t frequency_dsp_tests frequency_engine_tests frequency_ui_model_tests)
+add_executable(frequency_preset_tests tests/test_presets.cpp
+    Source/Engine/RadioEngine.cpp Source/Stations/StationPrep.cpp)
+foreach(t frequency_dsp_tests frequency_engine_tests frequency_ui_model_tests frequency_preset_tests)
     target_include_directories(${t} PRIVATE Source)
     target_compile_features(${t} PRIVATE cxx_std_17)
     if(MSVC)
@@ -69,3 +72,4 @@ endforeach()
 add_test(NAME dsp    COMMAND frequency_dsp_tests)
 add_test(NAME engine COMMAND frequency_engine_tests)
 add_test(NAME ui_model COMMAND frequency_ui_model_tests)
+add_test(NAME presets  COMMAND frequency_preset_tests)

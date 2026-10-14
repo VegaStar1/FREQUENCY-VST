@@ -16,18 +16,18 @@ namespace freq::ui
         void paint(juce::Graphics&) override;
         void mouseDown(const juce::MouseEvent&) override;
         juce::String getTooltip() override;
+        int slotAt(juce::Point<int> pos) const;                 // -1, если точка вне слотов
+        void setDropSlot(int slot) { if (slot != dropSlot_) { dropSlot_ = slot; repaint(); } }
 
     private:
         static constexpr int kCols = 8, kRows = 2;
         void timerCallback() override { repaint(); }
         juce::Rectangle<int> slotBounds(int slot) const;
-        int slotAt(juce::Point<int> pos) const;
         void chooseFile(int slot);
         void showMenu(int slot);
-        void promptText(const juce::String& title, const juce::String& initial,
-                        std::function<void(const juce::String&)> onOk);
 
         FrequencyProcessor& proc_;
         std::unique_ptr<juce::FileChooser> chooser_;
+        int dropSlot_ = -1;
     };
 }

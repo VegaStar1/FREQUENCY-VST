@@ -86,17 +86,27 @@ namespace freq
                 }
             }
 
-            juce::MessageManager::callAsync([this, alive, slot, buf, durationSec, fileRate]
+            juce::MessageManager::callAsync([this, alive, slot, buf, durationSec, fileRate, file]
             {
                 if (! alive->load()) return;
                 auto& m = meta(slot);
                 m.loaded  = (buf != nullptr);
                 m.missing = (buf == nullptr);
+                m.loadFailed = (buf == nullptr) && file.existsAsFile();
                 m.durationSec = durationSec; m.fileRate = fileRate;
                 if (m.frequencyMHz <= 0.f) m.frequencyMHz = defaultFrequency(slot);
                 publishSlot(slot, buf);
             });
         });
+    }
+
+    void StationManager::loadReplacing(int slot, const juce::File& file)
+    {
+        if (slot < 0 || slot >= kMaxStations) return;
+        auto& m = meta(slot);
+        m.missing = false; m.loadFailed = false; m.loaded = false;
+        m.name = {};                                  // имя возьмётся из нового файла
+        loadFileAsync(slot, file);
     }
 
     void StationManager::removeStation(int slot)
